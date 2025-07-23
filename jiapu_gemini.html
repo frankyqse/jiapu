@@ -2887,7 +2887,7 @@
                 }
             } catch (error) {
                 console.error('Error during API call or processing:', error);
-                const errorMessage = '生成回答时发生网络或处理错误，请检查控制台。';
+                const errorMessage = '生成回答时发生网络或处理错误，请检查控制台。\n尤其是从选用国外版的AI时容易连不通国外AI';
                 addMessageToChat(errorMessage, 'ai');
                 chatHistory.push({ role: "model", parts: [{ text: errorMessage }] }); // Add error to history
             } finally {
