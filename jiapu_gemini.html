@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>桐梓杨氏景伯祖世系信息图</title>
+    <title>桐梓杨氏景伯祖世系信息图</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Noto Sans SC', sans-serif;
+            font-family: 'Noto Sans SC', sans-serif; /* 恢复原始字体设置 */
             background-color: #f8f9fa;
         }
         .chart-container {
@@ -72,7 +72,8 @@
             margin-right: auto;
         }
         .chat-history-display {
-            height: 300px; /* Fixed height for chat history */
+            height: 400px; /* 初始高度为原先的一半 */
+            max-height: 1200px; /* 最大高度保持不变 */
             overflow-y: auto; /* Enable scrolling */
             border: 1px solid #e2e8f0;
             border-radius: 0.5rem;
@@ -80,58 +81,58 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            transition: height 0.3s ease-in-out; /* 添加高度变化的过渡效果 */
+        }
+        /* 提交按钮的加载动画 */
+        .loading-dot {
+            animation: bounce 1.4s infinite ease-in-out both;
+            background-color: currentColor;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
         }
     </style>
 </head>
 <body class="text-[#242325]">
 
-    <!-- 
-    Infographic Narrative Plan:
-    1.  Introduction: Hook with the title and the grand scope of the genealogy.
-    2.  New Feature: Family Genealogy Chatbot (LLM-powered conversational search) - MOVED TO FRONT.
-    3.  The Progenitor's Journey: Detail the historical migration of Jingbo Zu due to the Yang Yinglong Incident using a timeline.
-    4.  Family Structure: Visualize the main four branches of the family using an HTML/CSS flowchart.
-    5.  Generational Legacy: Display the unique 17-character generation naming system.
-    6.  Clan Demographics: Use charts to show population by generation, geographical distribution, and the prevalence of the name "Qiang".
-    7.  Modern Heritage: Highlight the 2012 recompilation effort and the role of key members like Yang Qiang.
-    8.  Conclusion: Summarize the clan's resilience and enduring legacy.
-    
-    Color Palette Selection: "Energetic & Playful" (#00A6ED, #7FB800, #FFB400, #F6511D, #242325). Chosen for its vibrant, high-contrast nature to make historical data engaging and modern.
-
-    Visualization Choices (NO SVG, NO Mermaid JS):
-    -   Progenitor's Migration: HTML/CSS Timeline. Goal: Show Change. Justification: Clearly represents sequential events over time.
-    -   Family Branching: HTML/CSS Flowchart. Goal: Organize. Justification: Effectively shows hierarchical structure without using prohibited technologies like SVG or Mermaid.
-    -   Generation Population: Chart.js Bar Chart. Goal: Compare. Justification: Ideal for comparing quantities across discrete categories (generations).
-    -   Geographic Distribution: Chart.js Donut Chart. Goal: Compare (Composition). Justification: Excellent for showing parts of a whole for a few key locations.
-    -   "Qiang" Name Analysis: Chart.js Bar Chart. Goal: Compare. Justification: Best for comparing the frequency of a name across different generation categories.
-    -   Key Stats (e.g., compilation year): Large Text/Number. Goal: Inform. Justification: High impact for a single, important data point.
-    -   Family Genealogy Chatbot (LLM): Text output from Gemini API. Goal: Inform/Engage. Justification: Provides personalized, context-aware answers to specific queries.
-    
-    Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in this output. All diagrams are built with HTML/CSS and all charts are rendered on Canvas by Chart.js.
-    -->
-
     <div class="container mx-auto p-4 md:p-8">
         
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-6xl font-bold text-[#00A6ED] mb-4">桐梓杨氏景伯祖世系</h1>
-            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">一份跨越数百年历史的家族史诗，记录了杨氏家族从播州之乱到现代繁荣的迁徙、传承与复兴。</p>
+        <header class="text-center mb-4">
+            <h4 class="text-2xl md:text-1xl font-bold text-[#00A6ED] mb-2">桐梓杨氏景伯祖世系</h4>
+            <p class="text-lg md:text-1xl text-gray-600 max-w-1xl mx-auto">一份跨越数百年历史的家族史诗，<br />记录了杨氏家族从播州之乱到现代繁荣的<br />
+			迁徙、传承与复兴。</p>
         </header>
 
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
 
-            <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold text-[#FFB400] mb-4">家族谱系问答 ✨</h2>
-                <p class="text-gray-700 mb-4">您可以提问关于家族成员的信息，例如：“请告诉我杨强是哪一年出生的？”或“请介绍一下杨大清？”</p>
-                <div id="chatHistoryDisplay" class="chat-history-display mb-4">
-                  <div class="chat-message ai">这里是聊天内容显示窗口,<br />请在下面下面输入问题后提交</div>
-                </div>                
+            <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-2">
+                <h4 class="text-1xl font-bold text-[#99B400] mb-2">家族人员查询 ✨</h4>
+                
+                <div id="chatHistoryDisplay" class="chat-history-display mb-2">
+                    <div class="chat-message ai">这里是聊天内容显示窗口</div>
+                </div>        
 
                 <div class="flex flex-col md:flex-row gap-4">
                     <input type="text" id="chatInput" placeholder="输入您的问题..." class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFB400]">                    
                 </div>
-                <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out"> 发送               
+                <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out mt-4 flex items-center justify-center">
+                    <span>发送</span>
                 </button>
+				<br />
+				<p class="text-gray-700 mb-4">您可以提问关于家族成员的信息，<br />
+				
+				例如：“请告诉我杨强是哪一年出生的？
+				<br />”或“请介绍一下杨大清？”</p>
             </section>
+
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
                  <p class="text-lg font-bold text-[#F6511D] mb-4">点击访问2012年由杨朝贵主编, 杨朝纯,杨世模等协作编写的<a style="color:blue;" href="桐梓杨氏景伯祖世系家谱.pdf"><u>《桐梓杨氏景伯祖世系家谱》</u></a>一书</p>
@@ -2887,7 +2888,7 @@
                 }
             } catch (error) {
                 console.error('Error during API call or processing:', error);
-                const errorMessage = '生成回答时发生网络或处理错误，请检查控制台。\n尤其是从选用国外版的AI时容易连不通国外AI';
+                const errorMessage = '生成回答时发生网络或处理错误，请检查控制台。\n尤其是选用国外版的AI时容易连不通国外AI';
                 addMessageToChat(errorMessage, 'ai');
                 chatHistory.push({ role: "model", parts: [{ text: errorMessage }] }); // Add error to history
             } finally {
