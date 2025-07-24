@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Noto Sans SC', sans-serif;
+            font-family: 'Noto Sans SC', sans-serif; /* 恢复原始字体设置 */
             background-color: #f8f9fa;
         }
         .chart-container {
@@ -72,7 +72,8 @@
             margin-right: auto;
         }
         .chat-history-display {
-            height: 300px; /* Fixed height for chat history */
+            height: 400px; /* 初始高度为原先的一半 */
+            max-height: 1200px; /* 最大高度保持不变 */
             overflow-y: auto; /* Enable scrolling */
             border: 1px solid #e2e8f0;
             border-radius: 0.5rem;
@@ -80,6 +81,23 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            transition: height 0.3s ease-in-out; /* 添加高度变化的过渡效果 */
+        }
+        /* 提交按钮的加载动画 */
+        .loading-dot {
+            animation: bounce 1.4s infinite ease-in-out both;
+            background-color: currentColor;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
         }
     </style>
 </head>
@@ -87,25 +105,32 @@
 
     <div class="container mx-auto p-4 md:p-8">
         
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-6xl font-bold text-[#00A6ED] mb-4">桐梓杨氏景伯祖世系</h1>
-            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">一份跨越数百年历史的家族史诗，记录了杨氏家族从播州之乱到现代繁荣的迁徙、传承与复兴。</p>
+        <header class="text-center mb-4">
+            <h4 class="text-2xl md:text-1xl font-bold text-[#00A6ED] mb-2">桐梓杨氏景伯祖世系</h4>
+            <p class="text-lg md:text-1xl text-gray-600 max-w-1xl mx-auto">一份跨越数百年历史的家族史诗，<br />记录了杨氏家族从播州之乱到现代繁荣的<br />
+			迁徙、传承与复兴。</p>
         </header>
 
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
 
-            <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold text-[#FFB400] mb-4">家族谱系问答 ✨</h2>
-                <p class="text-gray-700 mb-4">您可以提问关于家族成员的信息，例如：“请告诉我杨强是哪一年出生的？”或“请介绍一下杨大清？”</p>
-                <div id="chatHistoryDisplay" class="chat-history-display mb-4">
-                    <div class="chat-message ai">这里是聊天内容显示窗口,<br />请在下面下面输入问题后提交</div>
+            <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-2">
+                <h4 class="text-1xl font-bold text-[#99B400] mb-2">家族人员查询 ✨</h4>
+                
+                <div id="chatHistoryDisplay" class="chat-history-display mb-2">
+                    <div class="chat-message ai">这里是聊天内容显示窗口</div>
                 </div>        
 
                 <div class="flex flex-col md:flex-row gap-4">
                     <input type="text" id="chatInput" placeholder="输入您的问题..." class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFB400]">                    
                 </div>
-                <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out mt-4"> 发送                
+                <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out mt-4 flex items-center justify-center">
+                    <span>发送</span>
                 </button>
+				<br />
+				<p class="text-gray-700 mb-4">您可以提问关于家族成员的信息，<br />
+				
+				例如：“请告诉我杨强是哪一年出生的？
+				<br />”或“请介绍一下杨大清？”</p>
             </section>
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
@@ -378,6 +403,8 @@
 3、妇女在 40 岁以后就逐步失去生育能力，这是不可逆转的生理必
 然。
 因此，古谱的错误是明显的。
+
+
 	
 二、现状
  桐梓县域的各个乡镇、遵义汇川区高坪、板桥、重庆南部、南川等
@@ -2732,13 +2759,15 @@
 子：朝双，2008 年 3 月生
 女：朝艳，2004 年 3 月生
 
-	`;
+        `;
 
         function addMessageToChat(message, sender) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message', sender);
             messageElement.textContent = message;
             chatHistoryDisplay.appendChild(messageElement);
+            // Adjust chat history display height dynamically, up to max-height
+            chatHistoryDisplay.style.height = `${Math.min(chatHistoryDisplay.scrollHeight, parseInt(chatHistoryDisplay.style.maxHeight))}px`;
             chatHistoryDisplay.scrollTop = chatHistoryDisplay.scrollHeight; // Scroll to bottom
         }
 
@@ -2785,8 +2814,8 @@
             chatHistory.push({ role: "user", parts: [{ text: userQuery }] });
 
             sendChatBtn.disabled = true;
-            const originalButtonText = sendChatBtn.textContent;
-            sendChatBtn.textContent = '思考中...';
+            const originalButtonContent = sendChatBtn.innerHTML; // Store original content
+            sendChatBtn.innerHTML = `思考中<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>`; // Add loading dots
 
             try {
                 // System instruction for the LLM
@@ -2863,7 +2892,7 @@
                 chatHistory.push({ role: "model", parts: [{ text: errorMessage }] }); // Add error to history
             } finally {
                 sendChatBtn.disabled = false;
-                sendChatBtn.textContent = originalButtonText;
+                sendChatBtn.innerHTML = originalButtonContent; // Restore original button content
             }
         });
 
