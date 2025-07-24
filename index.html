@@ -28,15 +28,15 @@
             padding: 30px; /* 内容区域内边距 */
             border-radius: 8px; /* 圆角边框 */
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
-            text-align: center; /* 文本居中 */
+            text-align: center; /* 容器内文本居中 */
         }
 
         /* 标题样式 */
         h1 {
-            font-size: 1.7em; /* 相对单位，大标题 */
+            font-size: 2.5em; /* 相对单位，大标题 */
             color: #2c3e50; /* 深蓝色标题 */
             margin-bottom: 30px; /* 标题下边距 */
-            
+            font-weight: 700; /* 加粗 */
         }
 
         /* 段落样式 */
@@ -44,6 +44,27 @@
             font-size: 1.2em; /* 相对单位，段落文字 */
             margin-bottom: 20px; /* 段落下边距 */
             line-height: 1.8; /* 增加行高 */
+        }
+
+        /* AI链接组容器 */
+        .ai-links {
+            /* 关键改动：我们将这些链接本身作为块级元素，让它们能够独占一行，
+               然后通过设置它们的margin: 0 auto; 和 text-align: left; 来实现对齐 */
+            display: block; /* 确保是块级元素 */
+            text-align: left; /* 内部文本左对齐 */
+            margin-top: 20px; /* 增加上边距 */
+            margin-bottom: 30px; /* 增加下边距 */
+            /* 找到最大宽度，让所有链接基于此宽度居中 */
+            max-width: fit-content; /* 让这个容器的宽度适应最长的链接 */
+            margin-left: auto; /* 水平居中 */
+            margin-right: auto; /* 水平居中 */
+        }
+
+        /* AI链接项样式 */
+        .ai-link-item {
+            font-size: 1.2em; /* 相对单位，AI链接文字 */
+            margin-bottom: 10px; /* 项目间距 */
+            line-height: 1.5; /* 增加行高 */
         }
 
         /* 链接样式 */
@@ -82,6 +103,9 @@
                 font-size: 1.1em; /* 缩小段落文字 */
                 margin-bottom: 18px;
             }
+            .ai-link-item {
+                font-size: 1.1em;
+            }
             body {
                 padding: 15px;
             }
@@ -101,6 +125,9 @@
                 font-size: 1em; /* 进一步缩小段落文字 */
                 margin-bottom: 15px;
             }
+            .ai-link-item {
+                font-size: 1em;
+            }
             body {
                 padding: 10px;
             }
@@ -109,13 +136,21 @@
 </head>
 <body>
     <div class="container">
-        <h1>桐梓杨氏景伯祖世系信息页！</h1>
-		<p>可以通过下面的AI族谱专家来查询人员信息</p>
-        <p><a href="jiapu_ali.html">国内AI版</a></p>
-        <p> <a href="jiapu_gemini.html">国外AI版 (有可能连不通国外网络)</a></p>
+        <h1>欢迎来到桐梓杨氏家族信息页！</h1>
+
+        <p>可以通过下面的AI族谱专家来查询人员信息</p>
+
+        <div class="ai-links">
+            <div class="ai-link-item">
+                <a href="jiapu_ali.html">国内版AI</a>
+            </div>
+            <div class="ai-link-item">
+                <a href="jiapu_gemini.html">国外版AI (有可能连不通国外网络)</a>
+            </div>
+        </div>
+
         <p>点击访问2012年由杨朝贵主编, 杨朝纯,杨世模等协作编写的<br />
-		<a class="pdf-link" href="桐梓杨氏景伯祖世系家谱.pdf">
-		《桐梓杨氏景伯祖世系家谱》</a>一书</p>
+		<a class="pdf-link" href="桐梓杨氏景伯祖世系家谱.pdf">《桐梓杨氏景伯祖世系家谱》</a>一书</p>
     </div>
 </body>
 </html>
