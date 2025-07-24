@@ -1,13 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>首页</title>
+    <title>首页 - 桐梓杨氏家族信息</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif; /* 优先使用系统无衬线中文字体 */
+            line-height: 1.6; /* 增加行高，提升可读性 */
+            color: #333; /* 更柔和的字体颜色 */
+            background-color: #f9f9f9; /* 浅灰色背景 */
+            margin: 0;
+            padding: 20px; /* 页面内边距 */
+            display: flex; /* 使用Flexbox布局 */
+            flex-direction: column; /* 垂直排列内容 */
+            align-items: center; /* 水平居中内容 */
+            min-height: 100vh; /* 确保页面至少占满视口高度 */
+            box-sizing: border-box; /* 边框盒模型 */
+        }
+
+        /* 主容器，限制内容最大宽度，使其在宽屏上不会太散 */
+        .container {
+            max-width: 800px; /* 最大宽度 */
+            width: 100%; /* 宽度自适应 */
+            background-color: #fff; /* 内容区域背景白色 */
+            padding: 30px; /* 内容区域内边距 */
+            border-radius: 8px; /* 圆角边框 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
+            text-align: center; /* 文本居中 */
+        }
+
+        /* 标题样式 */
+        h1 {
+            font-size: 1.7em; /* 相对单位，大标题 */
+            color: #2c3e50; /* 深蓝色标题 */
+            margin-bottom: 30px; /* 标题下边距 */
+            
+        }
+
+        /* 段落样式 */
+        p {
+            font-size: 1.2em; /* 相对单位，段落文字 */
+            margin-bottom: 20px; /* 段落下边距 */
+            line-height: 1.8; /* 增加行高 */
+        }
+
+        /* 链接样式 */
+        a {
+            color: #3498db; /* 蓝色链接 */
+            text-decoration: none; /* 去掉下划线 */
+            font-weight: 600; /* 加粗 */
+            transition: color 0.3s ease; /* 颜色渐变效果 */
+        }
+
+        a:hover {
+            color: #2980b9; /* 鼠标悬停时颜色变深 */
+            text-decoration: underline; /* 鼠标悬停时显示下划线 */
+        }
+
+        /* 针对特定链接的样式（PDF链接） */
+        a.pdf-link {
+            color: #e74c3c; /* 红色，更醒目 */
+            font-size: 1.1em; /* 略大一点 */
+        }
+
+        a.pdf-link:hover {
+            color: #c0392b;
+        }
+
+        /* 媒体查询 - 适应平板设备 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            h1 {
+                font-size: 2em; /* 缩小标题 */
+                margin-bottom: 25px;
+            }
+            p {
+                font-size: 1.1em; /* 缩小段落文字 */
+                margin-bottom: 18px;
+            }
+            body {
+                padding: 15px;
+            }
+        }
+
+        /* 媒体查询 - 适应手机设备 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                box-shadow: none; /* 手机上可以去掉阴影，更简洁 */
+            }
+            h1 {
+                font-size: 1.8em; /* 进一步缩小标题 */
+                margin-bottom: 20px;
+            }
+            p {
+                font-size: 1em; /* 进一步缩小段落文字 */
+                margin-bottom: 15px;
+            }
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
-<body style="text-align:center;">
-    <h1>欢迎来到首页！</h1>
-    <p>点击访问 <a href="jiapu_ali.html">桐梓杨氏景伯祖世系家族成员居住统计信息-国内AI版</a></p>
-    <p>点击访问 <a href="jiapu_gemini.html">桐梓杨氏景伯祖世系家族成员居住统计信息-国外AI版</a></p>
-    <p>点击访问2012年由杨朝贵主编, 杨朝纯,杨世模等协作编写的<a style="color:blue;" href="桐梓杨氏景伯祖世系家谱.pdf"><u>《桐梓杨氏景伯祖世系家谱》</u></a>一书</p>
+<body>
+    <div class="container">
+        <h1>桐梓杨氏景伯祖世系信息页！</h1>
+		<p>可以通过下面的AI族谱专家来查询人员信息</p>
+        <p><a href="jiapu_ali.html">国内AI版</a></p>
+        <p> <a href="jiapu_gemini.html">国外AI版 (有可能连不通国外网络)</a></p>
+        <p>点击访问2012年由杨朝贵主编, 杨朝纯,杨世模等协作编写的<br />
+		<a class="pdf-link" href="桐梓杨氏景伯祖世系家谱.pdf">
+		《桐梓杨氏景伯祖世系家谱》</a>一书</p>
+    </div>
 </body>
 </html>
