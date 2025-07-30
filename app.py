@@ -1,0 +1,144 @@
+# app.py
+from flask import Flask, request, jsonify
+import requests
+import sys
+from datetime import datetime
+
+# 初始化 Flask 应用
+app = Flask(__name__)
+
+# --- 配置区 ---
+# 将您的API密钥硬编码到脚本中
+# 提示: 为了更高的安全性，未来可以考虑从环境变量中读取
+API_KEY = "sk-aa0690323b29465c8ee7e2b0297899e6" 
+LLM_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+FAMILY_DATA_FILE = './familyData.txt'
+
+# --- 全局变量 ---
+# 在应用启动时，一次性读取家谱数据到内存，避免每次请求都读文件
+try:
+    with open(FAMILY_DATA_FILE, 'r', encoding='utf-8') as f:
+        family_data_content = f.read()
+except FileNotFoundError:
+    family_data_content = "错误：未找到 familyData.txt.txt 文件。"
+except Exception as e:
+    family_data_content = f"错误：读取 familyData.txt.txt 文件时出错: {e}"
+    
+# 定义一个API端点/路由，用于处理聊天请求
+@app.route('/jiapu/wskchat', methods=['POST'])
+def chat_handler():
+    """
+    处理前端发送过来的聊天请求
+    """
+    
+    # 1. 从请求中获取JSON数据
+    data = request.get_json()
+    if not data or 'history' not in data:
+        return jsonify({'error': '请求格式不正确，缺少 history 字段'}), 400
+
+    chat_history = data['history']
+
+    # 2. 构建发送给LLM的完整数据
+    # 系统指令
+    now = datetime.now()
+    formatted_time = now.strftime("%Y年%m月%d日 %H点%M分%S秒")
+    print(f"接收到chrome消息:{chat_history[-1]['parts'][0]['text']}\n")
+    system_instruction = ( 
+        f"""你是一个家族谱系专家，现在时间是:{formatted_time},
+        你的任务是根据提供的家族信息，回答用户关于家族成员的提问。
+        你的任务是根据提供的家族信息，
+		回答用户关于家族成员的提问。
+		请只回答基于你所提供的信息，
+		不要编造。
+		如果信息不在你提供的内容中，
+		请说明你无法找到相关信息。
+		请以简洁、直接的中文回答。
+		然后以适当语气或者给予一定的评论,
+		比如查到某人是个大学学习,
+		要适当赞扬几句有才聪明爱学习之类的话语,
+		又或者对于活得久的你就说他养生有方得了个长寿,
+		早早就过世的就给予一定的惋惜,
+		并提醒大家要注意身体健康,等等之类的评论。
+		
+		请使用Markdown格式回复，包含标题、列表和强调文本。
+		
+		下面是提供给你检索信息的杨氏族谱书的内容:"""
+    )
+    
+					
+    
+    # 组合系统指令和家谱数据
+    full_system_prompt = system_instruction + \
+                         "\n\n----------下面是提供给你的家谱资料---------\n" \
+                         + family_data_content
+    
+    # 构造发送给大模型的 messages 列表
+    messages_to_llm = [
+        {"role": "system", "content": full_system_prompt}
+    ]
+    
+    # 将前端传来的历史记录转换为LLM API要求的格式
+    for entry in chat_history:
+        # 前端使用的 'model' 角色需要转换为 'assistant'
+        role = "assistant" if entry.get("role") == "model" else entry.get("role", "user")
+        text_content = entry.get("parts", [{}])[0].get("text", "")
+        if text_content:
+            messages_to_llm.append({"role": role, "content": text_content})
+
+    # 3. 调用LLM API
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {API_KEY}'
+    }
+    
+    payload = {
+        "model": "qwen-turbo",
+        "messages": messages_to_llm
+    }
+
+    try:
+        print("向LLM发请求\n")  
+        import time
+        #time.sleep(1)
+        return jsonify({'reply':f"接收到chrome消息:{chat_history[-1]['parts'][0]['text']}\n"})
+        
+        response = requests.post(LLM_API_URL, headers=headers, json=payload, timeout=200)
+        response.raise_for_status()  # 如果请求失败(如4xx, 5xx状态码)，则抛出异常
+        
+        llm_result = response.json()
+        
+        # 提取AI的回复
+        if llm_result.get("choices") and llm_result["choices"][0].get("message"):
+            ai_response = llm_result["choices"][0]["message"].get("content", "未能生成有效回复。")
+            print(f"收到LLM回复,{ai_response}\n")
+        else:
+            ai_response = "从API返回的数据格式不正确，无法提取回复。"
+
+        # 4. 将结果返回给前端
+        return jsonify({'reply': ai_response})
+    except requests.exceptions.Timeout:
+        return jsonify({'reply':"LLM API 请求超时"}) 
+
+    except requests.exceptions.RequestException as e:
+        # 打印详细错误信息到标准错误输出，便于查看
+        print(f"LLM API 请求失败: {e}", file=sys.stderr)
+         # 如果是 HTTP 错误（如 4xx/5xx），可以尝试打印响应内容
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"LLM API 响应状态码: {e.response.status_code}", file=sys.stderr)
+            print(f"LLM API 响应内容: {e.response.text}", file=sys.stderr)
+            return jsonify({'error': f'LLM API 请求失败: {e}'}), 500
+    except Exception as e: 
+         # 捕获其他未知错误
+         print(f"服务器内部错误: {e}", file=sys.stderr)
+         return jsonify({'error': f'服务器内部错误: {e}'}), 500
+
+@app.route("/ali_apikey")
+def send_ali_apikey():
+    return "sk-aa0690323b29465c8ee7e2b0297899e6"
+
+# 运行Flask应用
+if __name__ == '__main__':
+    # 监听所有网络接口的8000端口
+    app.run(host='0.0.0.0', port=8000, debug=False)
+    print("__name__ = ", __name__)
+    
