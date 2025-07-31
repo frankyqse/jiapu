@@ -7,6 +7,7 @@
     <script src="./js/tailwind.css.js"></script>
     <script src="./js/chart.js"></script>
 	<script src="./js/marked.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -417,15 +418,6 @@
             sendChatBtn.disabled = true;
             const originalButtonContent = sendChatBtn.innerHTML;
             sendChatBtn.innerHTML = `思考中<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>`;
-
-            // *** 改造点: 增加 AbortController 和 setTimeout 实现超时控制 ***
-            const controller = new AbortController();
-            const signal = controller.signal;
-            const FETCH_TIMEOUT = 60000; // 设置为 60 秒超时 (可根据实际情况调整，需大于LLM最长回复时间)
-            const ALERT_TIMEOUT = 5000; // 5 秒后提示用户可能需要等待
-
-            let timeoutId;
-            let alertTimeoutId;
             let systemInfoMessageElement = null; // 用于存储系统提示消息的元素
 
             // 5秒后显示“正在努力加载，请稍候...”
@@ -443,13 +435,26 @@
             }, FETCH_TIMEOUT);
 
             try {
-				const response = await fetch('/jiapu/wskchat', {
+                // 获取选中的模型
+                const selectedModel = document.querySelector('input[name="model"]:checked')?.value || 'qwen-plus';
+                
+                // 构造消息历史
+                const messages = chatHistory.map(msg => ({
+                    role: msg.role === 'user' ? 'user' : 'assistant',
+                    content: msg.parts[0].text
+                }));
+
+                // 发起流式请求
+                const response = await fetch('/jiapu/chat-wsk', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ history: chatHistory }), // 将当前聊天历史发送到后端
-                    signal: signal // 将 AbortController 的信号传递给 fetch
+                    body: JSON.stringify({ 
+                        model: selectedModel,
+                        messages: messages,
+                        stream: true // 启用流式传输
+                    }),
                 });
 
                 // 清除所有定时器
@@ -465,15 +470,59 @@
                     addMessageToChat(errorMessage, 'ai');
                     // 出错时，将AI的错误消息添加到历史记录中，避免影响下一次请求
                     chatHistory.push({ role: "model", parts: [{ text: errorMessage }] }); 
+                    sendChatBtn.disabled = false;
+                    sendChatBtn.innerHTML = originalButtonContent;
                     return; // 提前退出
                 }
 
-                const result = await response.json();
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
                 
-                const aiResponse = result.reply;
-                addMessageToChat(aiResponse, 'ai');
-                // 将AI的回复也添加到历史记录中
-                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                // 创建AI回复的消息元素
+                const aiMessageElement = document.createElement('div');
+                aiMessageElement.classList.add('chat-message', 'ai');
+                chatHistoryDisplay.appendChild(aiMessageElement);
+                
+                let accumulatedText = '';
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    // 解码接收到的数据
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data:')) {
+                            const data = line.slice(5).trim();
+                            if (data === '[DONE]') {
+                                // 流结束
+                                break;
+                            }
+                            
+                            try {
+                                const parsed = JSON.parse(data);
+                                const content = parsed.choices?.[0]?.delta?.content || '';
+                                accumulatedText += content;
+                                
+                                // 更新显示内容
+                                aiMessageElement.innerHTML = marked.parse(accumulatedText);
+                                chatHistoryDisplay.scrollTop = chatHistoryDisplay.scrollHeight;
+                            } catch (e) {
+                                console.error('Error parsing stream data:', e);
+                            }
+                        }
+                    }
+                }
+                
+                // 将AI的回复添加到历史记录中
+                chatHistory.push({ role: "model", parts: [{ text: accumulatedText }] });
+                
+                // 重新启用发送按钮
+                sendChatBtn.disabled = false;
+                sendChatBtn.innerHTML = originalButtonContent;
 
             } catch (error) {
                 // 清除所有定时器

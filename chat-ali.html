@@ -102,7 +102,7 @@
             40% { transform: scale(1); }
         }
 		
-		<!-- 在style部分添加Markdown样式 -->
+		/* 在style部分添加Markdown样式 */
 		.markdown-content {
 			line-height: 1.6;
 		}
@@ -147,7 +147,17 @@
                 </div>        
 
                 <div class="flex flex-col md:flex-row gap-4">
-                    <input type="text" id="chatInput" placeholder="输入您的问题..." class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFB400]">                    
+                    <input type="text" id="chatInput" placeholder="杨强是哪年出生的 或 介绍一下杨大清？" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFB400]">                    
+                </div>
+                <div class="flex items-center mt-4">
+                    <div class="flex items-center mr-4">
+                        <input type="radio" id="chat-ali" name="chatMode" value="chat-ali" class="mr-2" checked>
+                        <label for="mode1">直接AI</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="chat-wsk" name="chatMode" value="chat-wsk" class="mr-2">
+                        <label for="mode2">连接wskchat</label>
+                    </div>
                 </div>
                 <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out mt-4 flex items-center justify-center">
                     <span>发送</span>
@@ -485,19 +495,31 @@
 				familyData = baseDecoded.split("").reverse().join("")
 				});	
 				
-	    async function streamQwenResponse(messages) {
-            const apiUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
+	    async function streamQwenResponse(msg, selectedMode) {
+            let apiUrl  = ""
+            if (selectedMode === "chat-wsk") { 
+                apiUrl = "/jiapu/chat-wsk"
+                messages = msg.slice(1)
+            
+            }
+            else{
+                apiUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+                messages = msg
+            }
+
+            console.log("apiUrl:", apiUrl)
+            console.log("messages:", messages.map(m => m.content) )
+
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`,
-                        'X-DashScope-SSE': 'enable' // 启用服务器发送事件(SSE)
                     },
+                    
                     body: JSON.stringify({
-                        //model: "qwen-turbo",
-						model: "qwen-plus",
+                        model: "qwen-plus",  // 添加模型参数
                         messages: messages,
                         stream: true
                     })
@@ -507,29 +529,58 @@
                     throw new Error(`API请求失败: ${response.status}`);
                 }
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
+                // 根据调用的API不同，采用不同的处理方式
+                if (selectedMode === "chat-wsk") {
+                    // 处理从Flask后端返回的流式响应
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
 
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
 
-                    buffer += decoder.decode(value, { stream: true });
+                        buffer += decoder.decode(value, { stream: true });
+                        
+                        // 处理可能的多条消息
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
+
+                        for (const line of lines) {
+                            appendToAiMessage(line);
+                        }
+                    }
                     
-                    // 处理可能的多条消息
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
+                    // 处理buffer中剩余的内容
+                    if (buffer.trim() !== '') {
+                        appendToAiMessage(buffer);
+                    }
+                } else {
+                    // 处理直接从DashScope返回的流式响应
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
 
-                    for (const line of lines) {
-                        if (line.startsWith('data:') && line !== 'data: [DONE]') {
-                            try {
-                                const data = JSON.parse(line.substring(5));
-                                if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
-                                    appendToAiMessage(data.choices[0].delta.content);
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        
+                        // 处理可能的多条消息
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
+
+                        for (const line of lines) {
+                            if (line.startsWith('data:') && line !== 'data: [DONE]') {
+                                try {
+                                    const data = JSON.parse(line.substring(5));
+                                    if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+                                        appendToAiMessage(data.choices[0].delta.content);
+                                    }
+                                } catch (e) {
+                                    console.error('解析SSE数据错误:', e);
                                 }
-                            } catch (e) {
-                                console.error('解析SSE数据错误:', e);
                             }
                         }
                     }
@@ -543,12 +594,18 @@
  
         sendChatBtn.addEventListener('click', async () => {		
             const userQuery = chatInput.value.trim();
-            if (!userQuery) return;
+            // 修改: 当输入为空时使用 placeholder 内容
+            const finalQuery = userQuery || chatInput.placeholder.trim();
+            if (!finalQuery) return;
 
             // 添加用户消息
-            addMessageToChat(userQuery, 'user');
+            addMessageToChat(finalQuery, 'user');
             chatInput.value = '';
-            chatHistory.push({ role: "user", content: userQuery });
+            chatHistory.push({ role: "user", content: finalQuery });
+
+            // 获取选中的单选按钮的值
+            const selectedMode = document.querySelector('input[name="chatMode"]:checked').value;
+            console.log("选中的模式:", selectedMode);
 
             // 创建AI消息元素并初始化
             currentAiMessageElement = addMessageToChat('思考中...', 'ai');
@@ -589,7 +646,7 @@
 				];
 									
 				// 开始流式请求
-				await streamQwenResponse(messages);
+				await streamQwenResponse(messages, selectedMode);
 
 				// 将完整的AI响应添加到聊天历史
 				chatHistory.push({ role: "assistant", content: currentAiMessageContent });
