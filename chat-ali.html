@@ -516,6 +516,7 @@
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`,
+                        'X-DashScope-SSE': 'enable' // 启用服务器发送事件(SSE)
                     },
                     
                     body: JSON.stringify({
@@ -545,10 +546,21 @@
                         // 处理可能的多条消息
                         const lines = buffer.split('\n');
                         buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
-
+                        
                         for (const line of lines) {
-                            appendToAiMessage(line);
+                            if (line.startsWith('data:') && line !== 'data: [DONE]') {
+                                try {
+                                    const data = JSON.parse(line.substring(5));
+                                    if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+                                        appendToAiMessage(data.choices[0].delta.content);
+                                    }
+                                } catch (e) {
+                                    console.error('解析SSE数据错误:', e);
+                                }
                         }
+
+                    }
+                        
                     }
                     
                     // 处理buffer中剩余的内容

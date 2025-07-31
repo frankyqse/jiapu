@@ -34,6 +34,8 @@ def chat_handler():
     # 1. 从请求中获取JSON数据
     data = request.get_json()
 
+    print("接收到的数据:", data)
+
     # 2. 构建发送给LLM的完整数据
     # 系统指令
     now = datetime.now()
@@ -81,15 +83,18 @@ def chat_handler():
         'X-DashScope-SSE': 'enable' # 启用服务器发送事件(SSE)
     }
 
+
+
     payload = {
-         "model": "qwen-plus",
+         "model": "qwen-turbo",
          "messages": messages,
          "stream": True
         }
     
 
     try:
-        print("向LLM发请求\n")          
+        print("向LLM发请求\n")     
+        print(payload)     
         response = requests.post(LLM_API_URL, headers=headers, json=payload, timeout=200, stream=True)
         response.raise_for_status()  # 如果请求失败(如4xx, 5xx状态码)，则抛出异常
         
@@ -111,11 +116,13 @@ def chat_handler():
                                     content = data_obj.get('choices', [{}])[0].get('delta', {}).get('content', '')
                                     if content:
                                         print(f"{content}",end="", flush=True)  
-                                        yield f"{content}"
+                                        yield f"data: {json_part}\n"
                             except json.JSONDecodeError:
                                 # 如果不是JSON格式，直接打印整行
                                 print(decoded_line)
-            return Response(generate(), mimetype='text/plain')  # 使用text/plain而不是text/event-stream
+                        elif decoded_line.startswith(':'):  # 心跳消息
+                            yield f"{decoded_line}\n"
+            return Response(generate(), mimetype='text/event-stream')
         else:
             # 非流式传输，等待完整响应
             # 检查响应内容是否为空
