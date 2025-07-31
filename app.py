@@ -88,7 +88,7 @@ def chat_handler():
         }
     
     try:
-        print(f"向LLM发请求: {payload}\n")  
+        #print(f"向LLM发请求: {payload}\n")  
         response = requests.post(LLM_API_URL, headers=headers, json=payload, timeout=200, stream=True)
         response.raise_for_status()  # 如果请求失败(如4xx, 5xx状态码)，则抛出异常
         
@@ -165,6 +165,6 @@ def send_ali_apikey():
 # 运行Flask应用
 if __name__ == '__main__':
     # 监听所有网络接口的8000端口
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=False)
     print("__name__ = ", __name__)
     
