@@ -149,21 +149,22 @@
                 <div class="flex flex-col md:flex-row gap-4">
                     <input type="text" id="chatInput" placeholder="杨强是哪年出生的 或 介绍一下杨大清？" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFB400]">                    
                 </div>
-                <div class="flex items-center mt-4">
-                    <div class="flex items-center mr-4">
-                        <input type="radio" id="chat-ali" name="chatMode" value="chat-ali" class="mr-2" checked>
-                        <label for="mode1">直接AI</label>
+                <div class="flex items-center mt-4 ">
+                    <div class="flex flex-col mr-6">
+                        <label for="chat-ali" class="flex items-center mb-2 cursor-pointer">
+                            <input type="radio" id="chat-ali" name="chatMode" value="chat-ali" class="mr-2">
+                            <span>阿里AI</span>
+                        </label>
+                        <label for="chat-wsk" class="flex items-center cursor-pointer">
+                            <input type="radio" id="chat-wsk" name="chatMode" value="chat-wsk" class="mr-2" checked>
+                            <span>wskAI</span>
+                        </label>
                     </div>
-                    <div class="flex items-center">
-                        <input type="radio" id="chat-wsk" name="chatMode" value="chat-wsk" class="mr-2">
-                        <label for="mode2">连接wskchat</label>
-                    </div>
+                    <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out flex items-center justify-center">
+                        <span>发送</span>
+                    </button>
                 </div>
-                <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out mt-4 flex items-center justify-center">
-                    <span>发送</span>
-                </button>
-                <br />
-                <p class="text-gray-700 mb-2">例如："杨强是哪一年出生的" 或 "介绍一下杨大清？"</p>
+                
             </section>
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
@@ -507,9 +508,7 @@
                 messages = msg
             }
 
-            console.log("apiUrl:", apiUrl)
-            console.log("messages:", messages.map(m => m.content) )
-
+ 
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -531,8 +530,7 @@
                 }
 
                 // 根据调用的API不同，采用不同的处理方式
-                if (selectedMode === "chat-wsk") {
-                    // 处理从Flask后端返回的流式响应
+                 // 处理从Flask后端返回的流式响应
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
                     let buffer = '';
@@ -567,41 +565,10 @@
                     if (buffer.trim() !== '') {
                         appendToAiMessage(buffer);
                     }
-                } else {
-                    // 处理直接从DashScope返回的流式响应
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
-                    let buffer = '';
-
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-
-                        buffer += decoder.decode(value, { stream: true });
-                        
-                        // 处理可能的多条消息
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
-
-                        for (const line of lines) {
-                            if (line.startsWith('data:') && line !== 'data: [DONE]') {
-                                try {
-                                    const data = JSON.parse(line.substring(5));
-                                    if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
-                                        appendToAiMessage(data.choices[0].delta.content);
-                                    }
-                                } catch (e) {
-                                    console.error('解析SSE数据错误:', e);
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('流式请求错误:', error);
-                appendToAiMessage('\n\n[发生错误，请重试]');
+            }catch(e){
+                console.error('解析SSE数据错误:', e);
             }
-        }
+        } // 闭合streamQwenResponse函数
 		
  
         sendChatBtn.addEventListener('click', async () => {		
@@ -666,7 +633,7 @@
             } catch (error) {
                 console.error('处理请求时出错:', error);
                 appendToAiMessage('\n\n[发生错误，请重试]');
-            } finally {
+            }finally {                
                 sendChatBtn.disabled = false;
                 sendChatBtn.innerHTML = originalButtonContent;
                 currentAiMessageElement = null;

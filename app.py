@@ -75,26 +75,20 @@ def chat_handler():
          *(data['messages'] if data['messages'] else [{"role": "user", "content": "请开始你的对话吧！"}])
     ]
 
-    # 3. 调用LLM API
-    
+    # 3. 调用LLM API    
     headers= { 
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {API_KEY}',
         'X-DashScope-SSE': 'enable' # 启用服务器发送事件(SSE)
     }
-
-
-
     payload = {
          "model": "qwen-turbo",
          "messages": messages,
          "stream": True
         }
     
-
     try:
-        print("向LLM发请求\n")     
-        print(payload)     
+        print(f"向LLM发请求: {payload}\n")  
         response = requests.post(LLM_API_URL, headers=headers, json=payload, timeout=200, stream=True)
         response.raise_for_status()  # 如果请求失败(如4xx, 5xx状态码)，则抛出异常
         
