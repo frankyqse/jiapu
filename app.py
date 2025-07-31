@@ -78,8 +78,8 @@ def chat_handler():
     # 3. 调用LLM API    
     headers= { 
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {API_KEY}',
-        'X-DashScope-SSE': 'enable' # 启用服务器发送事件(SSE)
+        'Authorization': f'Bearer {API_KEY}'
+       # 'X-DashScope-SSE': 'enable' # 启用服务器发送事件(SSE)
     }
     payload = {
          "model": "qwen-turbo",
