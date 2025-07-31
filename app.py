@@ -1,16 +1,16 @@
 # app.py
 from flask import Flask, request, jsonify, Response
-import requests
 import sys
 from datetime import datetime
-import json
+import os
+import requests
 
 # 初始化 Flask 应用
 app = Flask(__name__)
 
 # 将您的API密钥硬编码到脚本中
 # 提示: 为了更高的安全性，未来可以考虑从环境变量中读取
-API_KEY = "sk-aa0690323b29465c8ee7e2b0297899e6" 
+API_KEY = os.environ.get("ALI_BAILIAN_LLM_API_KEY")
 LLM_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 FAMILY_DATA_FILE = './familyData.txt'
 
@@ -30,7 +30,7 @@ def chat_handler():
     """
     处理前端发送过来的聊天请求
     """
-    
+        
     # 1. 从请求中获取JSON数据
     data = request.get_json()
 
@@ -79,7 +79,11 @@ def chat_handler():
     headers= { 
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {API_KEY}'
-       # 'X-DashScope-SSE': 'enable' # 启用服务器发送事件(SSE)
+       # 'X-DashScope-SSE': 'enable' # 启用服务器发送事件(SSE),可自行添加
+       # 'X-DashScope-SSE-Mode': 'text' # 启用文本模式，可自行添加
+       # 'X-DashScope-SSE-Mode': 'json' # 启用JSON模式，可自行添加
+       # 'X-DashScope-SSE-Mode': 'stream' # 启用流式模式，可自行添加
+       # 'X-DashScope-SSE-Mode': 'chunk' # 启用分块模式，
     }
     payload = {
          "model": "qwen-turbo",
