@@ -14,6 +14,11 @@ API_KEY = os.getenv("ALI_BAILIAN_LLM_API_KEY")
 LLM_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 FAMILY_DATA_FILE = './familyData.txt'
 
+
+@app.route("/ali_apikey")
+def send_ali_apikey():
+    return API_KEY
+
 # --- 全局变量 ---
 # 在应用启动时，一次性读取家谱数据到内存，避免每次请求都读文件
 try:
@@ -162,9 +167,6 @@ def chat_handler():
         # 确保函数总是返回一个值
         pass
 
-@app.route("/ali_apikey")
-def send_ali_apikey():
-    return API_KEY
 
 # 运行Flask应用
 if __name__ == '__main__':
