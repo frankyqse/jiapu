@@ -4,13 +4,13 @@ import sys
 from datetime import datetime
 import os
 import requests
-
+from dotenv import load_dotenv  # 用于引入环境变量      
 # 初始化 Flask 应用
 app = Flask(__name__)
 
-# 将您的API密钥硬编码到脚本中
-# 提示: 为了更高的安全性，未来可以考虑从环境变量中读取
-API_KEY = os.environ.get("ALI_BAILIAN_LLM_API_KEY")
+#加载 .env文件中的环境变量   
+load_dotenv()   
+API_KEY = os.getenv("ALI_BAILIAN_LLM_API_KEY")
 LLM_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 FAMILY_DATA_FILE = './familyData.txt'
 
