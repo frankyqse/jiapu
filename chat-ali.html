@@ -159,6 +159,10 @@
                             <input type="radio" id="chat-wsk" name="chatMode" value="chat-wsk" class="mr-2" checked>
                             <span>wskAI</span>
                         </label>
+                        <label for="chat-google" class="flex items-center cursor-pointer">
+                            <input type="radio" id="chat-google" name="chatMode" value="chat-google" class="mr-2">
+                            <span>Google AI</span>
+                        </label>
                     </div>
                     <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out flex items-center justify-center">
                         <span>发送</span>
@@ -501,10 +505,17 @@
 				
 	    async function streamQwenResponse(msg, selectedMode) {
             let apiUrl  = ""
+            let messages = [];
             if (selectedMode === "chat-wsk") { 
                 apiUrl = "/jiapu/chat-wsk"
                 messages = msg.slice(1)
             
+            }
+            else if (selectedMode === "chat-google") {
+                // Google AI implementation
+                apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+                // Google AI requires a different message format
+                messages = msg;
             }
             else{
                 apiUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
@@ -513,27 +524,127 @@
 
  
             try {
-                const response = await fetch(apiUrl, {
+                let fetchOptions = {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                       // 'X-DashScope-SSE': 'enable' // 启用服务器发送事件(SSE)
+                        'Content-Type': 'application/json'
                     },
+                };
+
+                if (selectedMode === "chat-wsk") {
+                    fetchOptions.headers['Authorization'] = `Bearer ${apiKey}`;
+                    fetchOptions.body = JSON.stringify({
+                        model: "qwen-plus",
+                        messages: messages,
+                        stream: true
+                    });
+                } 
+                else if (selectedMode === "chat-google") {
+                    // Google AI implementation
+                    fetchOptions.headers['Content-Type'] = 'application/json';
+                    // Google API key would need to be handled appropriately
+                    const googleApiKey = "AIzaSyDoDWUH-TBds1CXbFqQIT5O7p9RvCWXzo0"; // This should be loaded securely
+                    // 添加stream参数到URL中以启用流式响应
+                    apiUrl += `?key=${googleApiKey}&alt=sse`;
                     
-                    body: JSON.stringify({
+                    // Transform messages to Google's format
+                    const lastMessage = messages[messages.length - 1];
+                    const systemMessages = messages.filter(m => m.role === "system");
+                    const conversationHistory = messages.filter(m => m.role !== "system");
+                    
+                    // Combine system instruction with family data
+                    let systemInstruction = "";
+                    if (systemMessages.length > 0) {
+                        systemInstruction = systemMessages.map(m => m.content).join("\n\n");
+                    }
+                    
+                    fetchOptions.body = JSON.stringify({
+                        contents: {
+                            role: "user",
+                            parts: [{
+                                text: systemInstruction + "\n\n" + lastMessage.content
+                            }]
+                        }
+                    });
+                }
+                else {
+                    // Aliyun DashScope
+                    fetchOptions.headers['Authorization'] = `Bearer ${apiKey}`;
+                    fetchOptions.body = JSON.stringify({
                         model: "qwen-plus",  // 添加模型参数
                         messages: messages,
                         stream: true
-                    })
-                });
+                    });
+                }
+
+                const response = await fetch(apiUrl, fetchOptions);
 
                 if (!response.ok) {
                     throw new Error(`API请求失败: ${response.status}`);
                 }
 
                 // 根据调用的API不同，采用不同的处理方式
-                 // 处理从Flask后端返回的流式响应
+                if (selectedMode === "chat-google") {
+                    // Google AI流式响应处理 - 使用SSE格式
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        
+                        // 处理可能的多条消息
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
+                        
+                        for (const line of lines) {
+                            // Google AI流式响应以data:开始
+                            if (line.startsWith('data:')) {
+                                try {
+                                    // Google AI流式响应数据是单独的JSON对象
+                                    const data = JSON.parse(line.substring(5));
+                                    // Google AI response format for streaming
+                                    if (data.candidates && data.candidates.length > 0) {
+                                        const candidate = data.candidates[0];
+                                        if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                                            const content = candidate.content.parts[0].text;
+                                            appendToAiMessage(content);
+                                        }
+                                    }
+                                } catch (e) {
+                                    // Google AI流式响应结束标记
+                                    if (line === 'data: [DONE]') {
+                                        break;
+                                    }
+                                    console.error('解析Google AI SSE数据错误:', e, line);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 处理buffer中剩余的内容
+                    if (buffer.trim() !== '') {
+                        try {
+                            // 处理非流式响应或最后的数据块
+                            if (buffer.startsWith('data:')) {
+                                const data = JSON.parse(buffer.substring(5));
+                                if (data.candidates && data.candidates.length > 0) {
+                                    const candidate = data.candidates[0];
+                                    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                                        const content = candidate.content.parts[0].text;
+                                        appendToAiMessage(content);
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.error('解析Google AI缓冲区数据错误:', e);
+                        }
+                    }
+                } else {
+                    // 处理从Flask后端返回的流式响应或阿里云响应
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
                     let buffer = '';
@@ -558,16 +669,15 @@
                                 } catch (e) {
                                     console.error('解析SSE数据错误:', e);
                                 }
+                            }
                         }
-
-                    }
-                        
                     }
                     
                     // 处理buffer中剩余的内容
                     if (buffer.trim() !== '') {
                         appendToAiMessage(buffer);
                     }
+                }
             }catch(e){
                 console.error('解析SSE数据错误:', e);
             }

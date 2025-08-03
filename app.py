@@ -80,6 +80,8 @@ def chat_handler():
          *(data['messages'] if data['messages'] else [{"role": "user", "content": "请开始你的对话吧！"}])
     ]
 
+    print("API_KEY:", API_KEY)
+
     # 3. 调用LLM API    
     headers= { 
         'Content-Type': 'application/json',
@@ -171,6 +173,6 @@ def chat_handler():
 # 运行Flask应用
 if __name__ == '__main__':
     # 监听所有网络接口的8000端口
-    app.run(host='0.0.0.0', port=8000, debug=False)
+    app.run(host='0.0.0.0', port=8000, debug=True)
     print("__name__ = ", __name__)
     
