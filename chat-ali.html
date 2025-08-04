@@ -639,14 +639,15 @@
                                         if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
                                             const content = candidate.content.parts[0].text;
                                             
-                                            // 只输出新增的内容，实现逐字输出效果
+                                            // 逐字符输出，实现真正的流式效果
                                             if (content && content.length > accumulatedContent.length) {
-                                                const delta = content.substring(accumulatedContent.length);
-                                                accumulatedContent = content;
-                                                appendToAiMessage(delta);
-                                                
-                                                // 添加小延迟以获得更好的逐字输出效果
-                                                await new Promise(resolve => setTimeout(resolve, 10));
+                                                const newContent = content.substring(accumulatedContent.length);
+                                                for (const char of newContent) {
+                                                    accumulatedContent += char;
+                                                    appendToAiMessage(char);
+                                                    // 添加小延迟以获得更好的逐字输出效果
+                                                    await new Promise(resolve => setTimeout(resolve, 5));
+                                                }
                                             }
                                         }
                                     }
