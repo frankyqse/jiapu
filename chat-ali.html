@@ -548,22 +548,47 @@
                     apiUrl += `?key=${googleApiKey}&alt=sse`;
                     
                     // Transform messages to Google's format
-                    const lastMessage = messages[messages.length - 1];
+                    // 提取系统消息和对话历史
                     const systemMessages = messages.filter(m => m.role === "system");
-                    const conversationHistory = messages.filter(m => m.role !== "system");
+                    const conversationMessages = messages.filter(m => m.role !== "system");
                     
-                    // Combine system instruction with family data
+                    // 合并系统指令
                     let systemInstruction = "";
                     if (systemMessages.length > 0) {
                         systemInstruction = systemMessages.map(m => m.content).join("\n\n");
                     }
                     
+                    // 构建对话内容，将历史消息和当前消息合并
+                    let fullConversation = "";
+                    for (let i = 0; i < conversationMessages.length; i++) {
+                        const message = conversationMessages[i];
+                        if (i === conversationMessages.length - 1) {
+                            // 最后一条消息是当前用户消息
+                            fullConversation += `user: ${message.content}`;
+                        } else {
+                            // 历史消息
+                            if (message.role === "user") {
+                                fullConversation += `user: ${message.content}\n\n`;
+                            } else {
+                                fullConversation += `assistant: ${message.content}\n\n`;
+                            }
+                        }
+                    }
+                    
                     fetchOptions.body = JSON.stringify({
+                        systemInstruction: {
+                            role: "system",
+                            parts: [{ text: systemInstruction }]
+                        },
                         contents: {
                             role: "user",
                             parts: [{
-                                text: systemInstruction + "\n\n" + lastMessage.content
+                                text: fullConversation
                             }]
+                        },
+                        generationConfig: {
+                            // Google AI流式输出需要这些参数
+                            temperature: 0.7
                         }
                     });
                 }
@@ -588,59 +613,48 @@
                     // Google AI流式响应处理 - 使用SSE格式
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
-                    let buffer = '';
+                    
+                    let accumulatedContent = ""; // 累积内容
                     
                     while (true) {
                         const { done, value } = await reader.read();
                         if (done) break;
 
-                        buffer += decoder.decode(value, { stream: true });
-                        
-                        // 处理可能的多条消息
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
+                        const text = decoder.decode(value, { stream: true });
+                        const lines = text.split('\n');
                         
                         for (const line of lines) {
-                            // Google AI流式响应以data:开始
                             if (line.startsWith('data:')) {
+                                const dataStr = line.substring(5);
+                                if (dataStr.trim() === '[DONE]') {
+                                    // 流完成
+                                    continue;
+                                }
+                                
                                 try {
-                                    // Google AI流式响应数据是单独的JSON对象
-                                    const data = JSON.parse(line.substring(5));
-                                    // Google AI response format for streaming
+                                    const data = JSON.parse(dataStr);
+                                    // Google AI流式响应格式
                                     if (data.candidates && data.candidates.length > 0) {
                                         const candidate = data.candidates[0];
                                         if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
                                             const content = candidate.content.parts[0].text;
-                                            appendToAiMessage(content);
+                                            
+                                            // 只输出新增的内容，实现逐字输出效果
+                                            if (content && content.length > accumulatedContent.length) {
+                                                const delta = content.substring(accumulatedContent.length);
+                                                accumulatedContent = content;
+                                                appendToAiMessage(delta);
+                                                
+                                                // 添加小延迟以获得更好的逐字输出效果
+                                                await new Promise(resolve => setTimeout(resolve, 10));
+                                            }
                                         }
                                     }
                                 } catch (e) {
-                                    // Google AI流式响应结束标记
-                                    if (line === 'data: [DONE]') {
-                                        break;
-                                    }
-                                    console.error('解析Google AI SSE数据错误:', e, line);
+                                    // 忽略解析错误，可能是不完整的数据块
+                                    console.debug('无法解析的数据块:', dataStr);
                                 }
                             }
-                        }
-                    }
-                    
-                    // 处理buffer中剩余的内容
-                    if (buffer.trim() !== '') {
-                        try {
-                            // 处理非流式响应或最后的数据块
-                            if (buffer.startsWith('data:')) {
-                                const data = JSON.parse(buffer.substring(5));
-                                if (data.candidates && data.candidates.length > 0) {
-                                    const candidate = data.candidates[0];
-                                    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                                        const content = candidate.content.parts[0].text;
-                                        appendToAiMessage(content);
-                                    }
-                                }
-                            }
-                        } catch (e) {
-                            console.error('解析Google AI缓冲区数据错误:', e);
                         }
                     }
                 } else {
