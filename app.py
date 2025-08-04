@@ -5,7 +5,9 @@ import sys
 from datetime import datetime
 import os
 import requests
-from dotenv import load_dotenv  # 用于引入环境变量      
+from dotenv import load_dotenv  # 用于引入环境变量    
+
+
 # 初始化 Flask 应用
 app = Flask(__name__)
 
@@ -50,7 +52,6 @@ def chat_handler():
         
     # 1. 从请求中获取JSON数据
     data = request.get_json()
-
     print("接收到的数据:", data)
 
     # 2. 构建发送给LLM的完整数据
@@ -78,9 +79,7 @@ def chat_handler():
 		
 		下面是提供给你检索信息的杨氏族谱书的内容:"""
     )
-    
-					
-    
+
     # 组合系统指令和家谱数据
     full_system_prompt = system_instruction + \
                          "\n\n----------下面是提供给你的家谱资料---------\n" \
@@ -91,7 +90,6 @@ def chat_handler():
         {"role": "system", "content": full_system_prompt},
          *(data['messages'] if data['messages'] else [{"role": "user", "content": "请开始你的对话吧！"}])
     ]
-
    
     # 3. 调用LLM API    
     headers= { 
