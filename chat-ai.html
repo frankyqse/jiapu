@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>桐梓杨氏景伯祖世系信息图</title>
-	<script src="./js/tailwind.css.js"></script>
+    <script src="./js/tailwind.css.js"></script>
     <script src="./js/chart.js"></script>
-	<script src="./js/marked.min.js"></script>
+    <script src="./js/marked.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
-            font-family: 'Noto Sans SC', sans-serif; /* 恢复原始字体设置 */
+            font-family: 'Noto Sans SC', sans-serif;
+            /* 恢复原始字体设置 */
             background-color: #f8f9fa;
         }
+
         .chart-container {
             position: relative;
             width: 100%;
@@ -24,12 +28,14 @@
             margin-right: auto;
             height: 350px;
             max-height: 400px;
-        } 
+        }
+
         @media (min-width: 768px) {
             .chart-container {
                 height: 400px;
             }
-        } 
+        }
+
         .flowchart-node {
             border: 2px solid #00A6ED;
             color: #242325;
@@ -39,10 +45,12 @@
             font-weight: 500;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
+
         .flowchart-line {
             background-color: #7FB800;
             position: absolute;
         }
+
         .timeline-item::before {
             content: '';
             position: absolute;
@@ -55,36 +63,48 @@
             background-color: #FFB400;
             border: 4px solid #f8f9fa;
         }
+
         .chat-message {
             margin-bottom: 0.5rem;
             padding: 0.75rem;
             border-radius: 0.5rem;
-            word-wrap: break-word; /* Ensure long words break */
+            word-wrap: break-word;
+            /* Ensure long words break */
         }
+
         .chat-message.user {
-            background-color: #e0f2fe; /* Light blue for user */
+            background-color: #e0f2fe;
+            /* Light blue for user */
             align-self: flex-end;
             text-align: right;
             margin-left: auto;
         }
+
         .chat-message.ai {
-            background-color: #f0f4f8; /* Light gray for AI */
+            background-color: #f0f4f8;
+            /* Light gray for AI */
             align-self: flex-start;
             text-align: left;
             margin-right: auto;
         }
+
         .chat-history-display {
-            height: 300px; /* 初始高度为原先的一半 */
-            max-height: 1200px; /* 最大高度保持不变 */
-            overflow-y: auto; /* Enable scrolling */
+            height: 300px;
+            /* 初始高度为原先的一半 */
+            max-height: 1200px;
+            /* 最大高度保持不变 */
+            overflow-y: auto;
+            /* Enable scrolling */
             border: 1px solid #e2e8f0;
             border-radius: 0.5rem;
             padding: 1rem;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            transition: height 0.3s ease-in-out; /* 添加高度变化的过渡效果 */
+            transition: height 0.3s ease-in-out;
+            /* 添加高度变化的过渡效果 */
         }
+
         /* 提交按钮的加载动画 */
         .loading-dot {
             animation: bounce 1.4s infinite ease-in-out both;
@@ -95,59 +115,79 @@
             display: inline-block;
             margin: 0 2px;
         }
-        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-		
-		/* 在style部分添加Markdown样式 */
-		.markdown-content {
-			line-height: 1.6;
-		}
-		.markdown-content h3 {
-			font-size: 1.2em;
-			font-weight: bold;
-			margin: 1em 0 0.5em 0;
-			color: #2c3e50;
-		}
-		.markdown-content p {
-			margin: 0.5em 0;
-		}
-		.markdown-content ul {
-			list-style-type: disc;
-			padding-left: 1.5em;
-			margin: 0.5em 0;
-		}
-		.markdown-content strong {
-			font-weight: bold;
-			color: #e74c3c;
-		}
 
+        .loading-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* 在style部分添加Markdown样式 */
+        .markdown-content {
+            line-height: 1.6;
+        }
+
+        .markdown-content h3 {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 1em 0 0.5em 0;
+            color: #2c3e50;
+        }
+
+        .markdown-content p {
+            margin: 0.5em 0;
+        }
+
+        .markdown-content ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+            margin: 0.5em 0;
+        }
+
+        .markdown-content strong {
+            font-weight: bold;
+            color: #e74c3c;
+        }
     </style>
 </head>
+
 <body class="text-[#242325]">
 
     <div class="container mx-auto p-4 md:p-8">
-        
+
         <header class="text-center mb-4">
             <h4 class="text-2xl md:text-1xl font-bold text-[#00A6ED] mb-2">桐梓杨氏景伯祖世系</h4>
             <p class="text-lg md:text-1xl text-gray-600 max-w-1xl mx-auto">一份跨越数百年历史的家族史诗，记录了杨氏家族从播州之乱<br />到现代繁荣的
-			迁徙、传承与复兴。</p>
+                迁徙、传承与复兴。</p>
         </header>
 
         <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-2">
                 <h4 class="text-1xl font-bold text-[#99B400] mb-3">家族人员查询 ✨</h4>
-                
+
                 <div id="chatHistoryDisplay" class="chat-history-display mb-2">
                     <div class="chat-message ai">这里是聊天内容显示窗口</div>
-                </div>        
+                </div>
 
                 <div class="flex flex-col md:flex-row gap-4">
-                    <input type="text" id="chatInput" placeholder="杨强是哪年出生的 或 介绍一下杨大清？" class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFB400]">                    
+                    <input type="text" id="chatInput" placeholder="杨强是哪年出生的 或 介绍一下杨大清？"
+                        class="flex-grow p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FFB400]">
                 </div>
                 <div class="flex items-center mt-4 ">
                     <div class="flex flex-col mr-6">
@@ -164,20 +204,23 @@
                             <span>Google AI</span>
                         </label>
                     </div>
-                    <button id="sendChatBtn" class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out flex items-center justify-center">
+                    <button id="sendChatBtn"
+                        class="bg-[#FFB400] text-white font-bold py-3 px-6 rounded-md shadow-md hover:bg-orange-500 transition duration-300 ease-in-out flex items-center justify-center">
                         <span>发送</span>
                     </button>
                 </div>
-                
-            </section> 
+
+            </section>
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
                 <p class="text-lg font-bold text-[#F6511D] mb-4">
                     点击访问2012年由杨朝贵主编, 杨朝纯,杨世模等协作编写的
                     <a style="color:blue;" href="./jiapu.pdf">
-                        <u>《桐梓杨氏景伯祖世系家谱》</u></a>一书</p>
+                        <u>《桐梓杨氏景伯祖世系家谱》</u></a>一书
+                </p>
                 <h2 class="text-2xl font-bold text-[#F6511D] mb-4">始祖的足迹：景伯祖的迁徙史</h2>
-                <p class="text-gray-700 mb-6">家族的根源可追溯至明朝万历年间。因“杨应龙事件”，播州杨氏遭遇灭顶之灾。始祖景伯祖幸免于难，为避祸开始了艰难的迁徙，最终在桐梓农会场落地生根，为家族的延续奠定了基础。</p>
+                <p class="text-gray-700 mb-6">
+                    家族的根源可追溯至明朝万历年间。因“杨应龙事件”，播州杨氏遭遇灭顶之灾。始祖景伯祖幸免于难，为避祸开始了艰难的迁徙，最终在桐梓农会场落地生根，为家族的延续奠定了基础。</p>
                 <div class="relative pl-8 border-l-4 border-gray-200">
                     <div class="timeline-item mb-8">
                         <h3 class="font-semibold text-lg">约 1600年</h3>
@@ -189,36 +232,49 @@
                     </div>
                     <div class="timeline-item">
                         <h3 class="font-semibold text-lg">最终定居</h3>
-                        <p class="text-gray-600">景伯祖再次迁徙，最终定居于桐梓农会场，开枝散叶，子孙繁衍至今。</p> 
-                                                </div>
+                        <p class="text-gray-600">景伯祖再次迁徙，最终定居于桐梓农会场，开枝散叶，子孙繁衍至今。</p>
+                    </div>
                 </div>
             </section>
 
             <section class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-2xl font-bold text-[#7FB800] mb-6 text-center">家族的根基：四大支系繁衍图</h2>
-                <p class="text-gray-700 mb-8 text-center max-w-2xl mx-auto">景伯祖之子在朝祖育有四子，他们构成了桐梓杨氏最主要的四大支系，后代遍布各地，形成了紧密的家族网络。</p>
+                <p class="text-gray-700 mb-8 text-center max-w-2xl mx-auto">
+                    景伯祖之子在朝祖育有四子，他们构成了桐梓杨氏最主要的四大支系，后代遍布各地，形成了紧密的家族网络。</p>
                 <div class="relative flex flex-col items-center py-4">
                     <div class="flowchart-node mb-8">景伯祖 (入桐始祖)</div>
-                    <div class="flowchart-line" style="width: 2px; height: 32px; top: 68px; left: 50%; transform: translateX(-50%);"></div>
+                    <div class="flowchart-line"
+                        style="width: 2px; height: 32px; top: 68px; left: 50%; transform: translateX(-50%);"></div>
                     <div class="flowchart-node absolute" style="top: 100px;">在朝祖</div>
-                    <div class="flowchart-line" style="width: 2px; height: 32px; top: 156px; left: 50%; transform: translateX(-50%);"></div>
-                    <div class="flowchart-line hidden md:block" style="width: 75%; height: 2px; top: 188px; left: 12.5%;"></div>
-                    
-                    <div class="w-full mt-28 grid grid-cols-1 md:grid-cols-4 gap-y-12 md:gap-y-0 md:gap-x-4 text-center">
+                    <div class="flowchart-line"
+                        style="width: 2px; height: 32px; top: 156px; left: 50%; transform: translateX(-50%);"></div>
+                    <div class="flowchart-line hidden md:block"
+                        style="width: 75%; height: 2px; top: 188px; left: 12.5%;"></div>
+
+                    <div
+                        class="w-full mt-28 grid grid-cols-1 md:grid-cols-4 gap-y-12 md:gap-y-0 md:gap-x-4 text-center">
                         <div class="relative flex justify-center">
-                            <div class="flowchart-line absolute" style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);"></div>
+                            <div class="flowchart-line absolute"
+                                style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);">
+                            </div>
                             <div class="flowchart-node">惟栋祖 (长房)</div>
                         </div>
                         <div class="relative flex justify-center">
-                            <div class="flowchart-line absolute hidden md:block" style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);"></div>
+                            <div class="flowchart-line absolute hidden md:block"
+                                style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);">
+                            </div>
                             <div class="flowchart-node">惟选祖 (二房)</div>
                         </div>
                         <div class="relative flex justify-center">
-                            <div class="flowchart-line absolute hidden md:block" style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);"></div>
+                            <div class="flowchart-line absolute hidden md:block"
+                                style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);">
+                            </div>
                             <div class="flowchart-node">惟材祖 (三房)</div>
                         </div>
                         <div class="relative flex justify-center">
-                            <div class="flowchart-line absolute hidden md:block" style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);"></div>
+                            <div class="flowchart-line absolute hidden md:block"
+                                style="width: 2px; height: 32px; top: -32px; left: 50%; transform: translateX(-50%);">
+                            </div>
                             <div class="flowchart-node">惟樑祖 (四房)</div>
                         </div>
                     </div>
@@ -273,10 +329,13 @@
                 </div>
             </section>
 
-            <section class="md:col-span-2 lg:col-span-3 bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row items-center gap-8">
+            <section
+                class="md:col-span-2 lg:col-span-3 bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row items-center gap-8">
                 <div class="text-center md:text-left">
                     <h2 class="text-2xl font-bold text-[#00A6ED] mb-4">现代传承：2012版家谱编撰</h2>
-                    <p class="text-gray-700 mb-4">为延续家族记忆，族人于2011年倡议重修家谱。在杨朝纯、杨朝贵等人的推动下，新版家谱于2012年9月完成。其中，“忠”字辈的杨强先生担任了关键的排版编辑工作，为这份宝贵的家族文献付出了心血。</p>
+                    <p class="text-gray-700 mb-4">
+                        为延续家族记忆，族人于2011年倡议重修家谱。在杨朝纯、杨朝贵等人的推动下，新版家谱于2012年9月完成。其中，“忠”字辈的杨强先生担任了关键的排版编辑工作，为这份宝贵的家族文献付出了心血。
+                    </p>
                     <p class="text-gray-700">他的参与，是年轻一代继承和发扬家族文化的生动体现。</p>
                 </div>
                 <div class="flex-shrink-0 text-center bg-blue-50 p-8 rounded-lg">
@@ -426,46 +485,46 @@
         let chatHistory = [];
         let currentAiMessageElement = null;
         let currentAiMessageContent = '';
-		
-		function addMessageToChat(message, sender) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('chat-message', sender);
-        
-        if (sender === 'ai') {
-            const contentElement = document.createElement('div');
-            contentElement.className = 'markdown-content';
-            contentElement.innerHTML = marked.parse(message);
-            messageElement.appendChild(contentElement);
-        } else {
-            messageElement.textContent = message;
-        }
-        
-        chatHistoryDisplay.appendChild(messageElement);
-        chatHistoryDisplay.scrollTop = chatHistoryDisplay.scrollHeight;
-        return messageElement;
-    }
 
-		function appendToAiMessage(content) {
-        if (currentAiMessageElement) {
-            currentAiMessageContent += content;
-            const contentElement = currentAiMessageElement.querySelector('.markdown-content');
-            if (contentElement) {
-                contentElement.innerHTML = marked.parse(currentAiMessageContent);
-                chatHistoryDisplay.scrollTop = chatHistoryDisplay.scrollHeight;
+        function addMessageToChat(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', sender);
+
+            if (sender === 'ai') {
+                const contentElement = document.createElement('div');
+                contentElement.className = 'markdown-content';
+                contentElement.innerHTML = marked.parse(message);
+                messageElement.appendChild(contentElement);
+            } else {
+                messageElement.textContent = message;
+            }
+
+            chatHistoryDisplay.appendChild(messageElement);
+            chatHistoryDisplay.scrollTop = chatHistoryDisplay.scrollHeight;
+            return messageElement;
+        }
+
+        function appendToAiMessage(content) {
+            if (currentAiMessageElement) {
+                currentAiMessageContent += content;
+                const contentElement = currentAiMessageElement.querySelector('.markdown-content');
+                if (contentElement) {
+                    contentElement.innerHTML = marked.parse(currentAiMessageContent);
+                    chatHistoryDisplay.scrollTop = chatHistoryDisplay.scrollHeight;
+                }
             }
         }
-    }
 
         function getCurrentChineseDateTime() {
             const now = new Date(); // 获取当前的日期和时间对象
-            
+
             // 定义日期格式选项，使其符合中文常用格式
             const dateOptions = {
                 year: 'numeric',    // 年份，例如：2024
                 month: 'long',      // 月份全称，例如：七月
                 day: 'numeric'      // 日，例如：23
             };
-            
+
             // 定义时间格式选项，使其符合中文常用格式
             const timeOptions = {
                 hour: '2-digit',    // 小时，两位数，例如：08
@@ -473,51 +532,51 @@
                 second: '2-digit', // 秒，两位数，例如：00
                 hour12: false       // 使用24小时制
             };
-            
+
             // 将日期和时间分别格式化为中文常用字符串
             // 'zh-CN' 表示中国大陆的语言环境
             const formattedDate = now.toLocaleDateString('zh-CN', dateOptions);
             const formattedTime = now.toLocaleTimeString('zh-CN', timeOptions);
             return `${formattedDate} ${formattedTime}`;
         }
-		
-		function base64DecodeUnicode(str) {
-			// 使用 TextDecoder 来处理 UTF-8
-			const bytes = Uint8Array.from(atob(str), c => c.charCodeAt(0));
-			return new TextDecoder('utf-8').decode(bytes);
-		}
 
-		let ali_bailian_llm_apikey = ""
-		fetch('/ali_bailian_llm_apikey')
-			.then(response => response.text())
-			.then(content => { 
-				const baseDecoded = base64DecodeUnicode(content)
-				ali_bailian_llm_apikey = baseDecoded.split("").reverse().join("")
-				});	
+        function base64DecodeUnicode(str) {
+            // 使用 TextDecoder 来处理 UTF-8
+            const bytes = Uint8Array.from(atob(str), c => c.charCodeAt(0));
+            return new TextDecoder('utf-8').decode(bytes);
+        }
 
-        let gemini_apikey = ""  
+        let ali_bailian_llm_apikey = ""
+        fetch('/ali_bailian_llm_apikey')
+            .then(response => response.text())
+            .then(content => {
+                const baseDecoded = base64DecodeUnicode(content)
+                ali_bailian_llm_apikey = baseDecoded.split("").reverse().join("")
+            });
+
+        let gemini_apikey = ""
         fetch("/gemini_apikey")
-			.then(response => response.text())
-			.then(content => { 
-				const baseDecoded = base64DecodeUnicode(content)
-				gemini_apikey = baseDecoded.split("").reverse().join("")
-				});	
-		
-		let familyData = ""
-		fetch('/jiapu/familyData.encoded.txt')
-			.then(response => response.text())
-			.then(content => { 
-				const baseDecoded = base64DecodeUnicode(content)
-				familyData = baseDecoded.split("").reverse().join("")
-				});	
-				
-	    async function streamQwenResponse(msg, selectedMode) {
-            let apiUrl  = ""
+            .then(response => response.text())
+            .then(content => {
+                const baseDecoded = base64DecodeUnicode(content)
+                gemini_apikey = baseDecoded.split("").reverse().join("")
+            });
+
+        let familyData = ""
+        fetch('/jiapu/familyData.encoded.txt')
+            .then(response => response.text())
+            .then(content => {
+                const baseDecoded = base64DecodeUnicode(content)
+                familyData = baseDecoded.split("").reverse().join("")
+            });
+
+        async function streamQwenResponse(msg, selectedMode) {
+            let apiUrl = ""
             let messages = [];
-            if (selectedMode === "chat-wsk") { 
+            if (selectedMode === "chat-wsk") {
                 apiUrl = "/jiapu/chat-wsk"
                 messages = msg.slice(1)
-            
+
             }
             else if (selectedMode === "chat-google") {
                 // Google AI implementation
@@ -525,16 +584,16 @@
                 // Google AI requires a different message format
                 messages = msg;
             }
-            else{
+            else {
                 apiUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
                 messages = msg
             }
 
- 
+
             try {
                 let fetchOptions = {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json'
                     },
                 };
@@ -544,24 +603,24 @@
                         messages: messages,
                         stream: true
                     });
-                } 
+                }
                 else if (selectedMode === "chat-google") {
                     // Google AI implementation
                     fetchOptions.headers['Content-Type'] = 'application/json';
-                     // 添加stream参数到URL中以启用流式响应
+                    // 添加stream参数到URL中以启用流式响应
                     apiUrl += `?key=${gemini_apikey}&alt=sse`;
-                    
+
                     // Transform messages to Google's format
                     // 提取系统消息和对话历史
                     const systemMessages = messages.filter(m => m.role === "system");
                     const conversationMessages = messages.filter(m => m.role !== "system");
-                    
+
                     // 合并系统指令
                     let systemInstruction = "";
                     if (systemMessages.length > 0) {
                         systemInstruction = systemMessages.map(m => m.content).join("\n\n");
                     }
-                    
+
                     // 构建对话内容，将历史消息和当前消息合并
                     let fullConversation = "";
                     for (let i = 0; i < conversationMessages.length; i++) {
@@ -578,7 +637,7 @@
                             }
                         }
                     }
-                    
+
                     fetchOptions.body = JSON.stringify({
                         systemInstruction: {
                             role: "system",
@@ -617,16 +676,16 @@
                     // Google AI流式响应处理 - 使用SSE格式
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
-                    
+
                     let accumulatedContent = ""; // 累积内容
-                    
+
                     while (true) {
                         const { done, value } = await reader.read();
                         if (done) break;
 
                         const text = decoder.decode(value, { stream: true });
                         const lines = text.split('\n');
-                        
+
                         for (const line of lines) {
                             if (line.startsWith('data:')) {
                                 const dataStr = line.substring(5);
@@ -634,7 +693,7 @@
                                     // 流完成
                                     continue;
                                 }
-                                
+
                                 try {
                                     const data = JSON.parse(dataStr);
                                     // Google AI流式响应格式
@@ -642,7 +701,7 @@
                                         const candidate = data.candidates[0];
                                         if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
                                             const content = candidate.content.parts[0].text;
-                                            
+
                                             // 逐字符输出，实现真正的流式效果
                                             if (content && content.length > accumulatedContent.length) {
                                                 const newContent = content.substring(accumulatedContent.length);
@@ -673,11 +732,11 @@
                         if (done) break;
 
                         buffer += decoder.decode(value, { stream: true });
-                        
+
                         // 处理可能的多条消息
                         const lines = buffer.split('\n');
                         buffer = lines.pop(); // 最后一行可能不完整，保留在buffer中
-                        
+
                         for (const line of lines) {
                             if (line.startsWith('data:') && line !== 'data: [DONE]') {
                                 try {
@@ -691,19 +750,19 @@
                             }
                         }
                     }
-                    
+
                     // 处理buffer中剩余的内容
                     if (buffer.trim() !== '') {
                         appendToAiMessage(buffer);
                     }
                 }
-            }catch(e){
+            } catch (e) {
                 console.error('解析SSE数据错误:', e);
             }
         } // 闭合streamQwenResponse函数
-		
- 
-        sendChatBtn.addEventListener('click', async () => {		
+
+
+        sendChatBtn.addEventListener('click', async () => {
             const userQuery = chatInput.value.trim();
             // 修改: 当输入为空时使用 placeholder 内容
             const finalQuery = userQuery || chatInput.placeholder.trim();
@@ -727,7 +786,7 @@
             sendChatBtn.innerHTML = `思考中<span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span>`;
 
             try {
-				const systemInstruction = `
+                const systemInstruction = `
 					现在时间是:${getCurrentChineseDateTime()}. 
 					你是一个家族谱系专家，
 					你的任务是根据提供的家族信息，
@@ -748,24 +807,24 @@
 					
 					下面是提供给你检索信息的杨氏族谱书的内容:
 
-				`;				
-			
-				// 构造消息数组
-				const messages = [
-					{ role: "system", content: systemInstruction + "\n\n" + familyData },
-					...chatHistory.map(msg => ({ role: msg.role, content: msg.content }))
-				];
-									
-				// 开始流式请求
-				await streamQwenResponse(messages, selectedMode);
+				`;
 
-				// 将完整的AI响应添加到聊天历史
-				chatHistory.push({ role: "assistant", content: currentAiMessageContent });
-				
+                // 构造消息数组
+                const messages = [
+                    { role: "system", content: systemInstruction + "\n\n" + familyData },
+                    ...chatHistory.map(msg => ({ role: msg.role, content: msg.content }))
+                ];
+
+                // 开始流式请求
+                await streamQwenResponse(messages, selectedMode);
+
+                // 将完整的AI响应添加到聊天历史
+                chatHistory.push({ role: "assistant", content: currentAiMessageContent });
+
             } catch (error) {
                 console.error('处理请求时出错:', error);
                 appendToAiMessage('\n\n[发生错误，请重试]');
-            }finally {                
+            } finally {
                 sendChatBtn.disabled = false;
                 sendChatBtn.innerHTML = originalButtonContent;
                 currentAiMessageElement = null;
@@ -773,11 +832,12 @@
             }
         });
 
-        chatInput.addEventListener('keypress', function(e) {
+        chatInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !sendChatBtn.disabled) {
                 sendChatBtn.click();
             }
         });
     </script>
 </body>
+
 </html>
