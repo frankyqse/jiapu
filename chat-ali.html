@@ -487,12 +487,20 @@
 			return new TextDecoder('utf-8').decode(bytes);
 		}
 
-		let apiKey = ""
-		fetch('/jiapu/ali_LLM_apikey_encoded.txt')
+		let ali_bailian_llm_apikey = ""
+		fetch('/ali_bailian_llm_apikey')
 			.then(response => response.text())
 			.then(content => { 
 				const baseDecoded = base64DecodeUnicode(content)
-				apiKey = baseDecoded.split("").reverse().join("")
+				ali_bailian_llm_apikey = baseDecoded.split("").reverse().join("")
+				});	
+
+        let gemini_apikey = ""  
+        fetch("/gemini_apikey")
+			.then(response => response.text())
+			.then(content => { 
+				const baseDecoded = base64DecodeUnicode(content)
+				gemini_apikey = baseDecoded.split("").reverse().join("")
 				});	
 		
 		let familyData = ""
@@ -532,9 +540,7 @@
                 };
 
                 if (selectedMode === "chat-wsk") {
-                    fetchOptions.headers['Authorization'] = `Bearer ${apiKey}`;
                     fetchOptions.body = JSON.stringify({
-                        model: "qwen-plus",
                         messages: messages,
                         stream: true
                     });
@@ -542,10 +548,8 @@
                 else if (selectedMode === "chat-google") {
                     // Google AI implementation
                     fetchOptions.headers['Content-Type'] = 'application/json';
-                    // Google API key would need to be handled appropriately
-                    const googleApiKey = "AIzaSyDoDWUH-TBds1CXbFqQIT5O7p9RvCWXzo0"; // This should be loaded securely
-                    // 添加stream参数到URL中以启用流式响应
-                    apiUrl += `?key=${googleApiKey}&alt=sse`;
+                     // 添加stream参数到URL中以启用流式响应
+                    apiUrl += `?key=${gemini_apikey}&alt=sse`;
                     
                     // Transform messages to Google's format
                     // 提取系统消息和对话历史
@@ -594,7 +598,7 @@
                 }
                 else {
                     // Aliyun DashScope
-                    fetchOptions.headers['Authorization'] = `Bearer ${apiKey}`;
+                    fetchOptions.headers['Authorization'] = `Bearer ${ali_bailian_llm_apikey}`;
                     fetchOptions.body = JSON.stringify({
                         model: "qwen-plus",  // 添加模型参数
                         messages: messages,

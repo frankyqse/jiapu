@@ -1,5 +1,6 @@
 # app.py
 from flask import Flask, request, jsonify, Response
+import base64
 import sys
 from datetime import datetime
 import os
@@ -10,14 +11,25 @@ app = Flask(__name__)
 
 #加载 .env文件中的环境变量   
 load_dotenv()   
-API_KEY = os.getenv("ALI_BAILIAN_LLM_API_KEY")
+ali_bailian_llm_apikey = os.getenv("ALI_BAILIAN_LLM_API_KEY")
+gemini_apikey = os.getenv("GEMINI_APIKEY")
+
 LLM_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 FAMILY_DATA_FILE = './familyData.txt'
 
 
-@app.route("/ali_apikey")
-def send_ali_apikey():
-    return API_KEY
+# 反转内容顺序
+# reversed_data = original_data[::-1]  # Python 切片反转字符串
+# Base64 编码
+# encoded_data = base64.b64encode(reversed_data.encode("utf-8")).decode("utf-8")
+
+@app.route("/ali_bailian_llm_apikey")
+def send_ali_bailian_llm_apikey():
+    return base64.b64encode( ali_bailian_llm_apikey[::-1].encode("utf-8")).decode("utf-8")
+
+@app.route("/gemini_apikey")
+def send_gemini_apikey():
+    return base64.b64encode(gemini_apikey[::-1].encode("utf-8")).decode("utf-8")
 
 # --- 全局变量 ---
 # 在应用启动时，一次性读取家谱数据到内存，避免每次请求都读文件
@@ -80,12 +92,11 @@ def chat_handler():
          *(data['messages'] if data['messages'] else [{"role": "user", "content": "请开始你的对话吧！"}])
     ]
 
-    print("API_KEY:", API_KEY)
-
+   
     # 3. 调用LLM API    
     headers= { 
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {API_KEY}'
+        'Authorization': f'Bearer {ali_bailian_llm_apikey}'
        # 'X-DashScope-SSE': 'enable' # 启用服务器发送事件(SSE),可自行添加
        # 'X-DashScope-SSE-Mode': 'text' # 启用文本模式，可自行添加
        # 'X-DashScope-SSE-Mode': 'json' # 启用JSON模式，可自行添加
