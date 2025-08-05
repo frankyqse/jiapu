@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>桐梓杨氏景伯祖世系信息图</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">   
     <script src="./js/tailwind.css.js"></script>
     <script src="./js/chart.js"></script>
     <script src="./js/marked.min.js"></script>
@@ -776,6 +777,7 @@
             // 获取选中的单选按钮的值
             const selectedMode = document.querySelector('input[name="chatMode"]:checked').value;
             console.log("选中的模式:", selectedMode);
+            console.log("wo cao")
 
             // 创建AI消息元素并初始化
             currentAiMessageElement = addMessageToChat('思考中...', 'ai');
@@ -829,8 +831,8 @@
                 sendChatBtn.innerHTML = originalButtonContent;
                 currentAiMessageElement = null;
                 currentAiMessageContent = '';
-            }
-        });
+            } 
+        }); 
 
         chatInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !sendChatBtn.disabled) {
