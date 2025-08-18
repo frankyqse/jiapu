@@ -57,7 +57,7 @@ def chat_handler():
     # 2. 构建发送给LLM的完整数据
     # 系统指令
     now = datetime.now()
-    formatted_time = now.strftime("%Y年%m月%d日  %H点%M分%S秒")
+    formatted_time = now.strftime("%Y年%m月%d日   %H点%M分%S秒")
     system_instruction = ( 
         f"""你是一个家族谱系专家，现在时间是:{formatted_time},
         你的任务是根据提供的家族信息，回答用户关于家族成员的提问。
